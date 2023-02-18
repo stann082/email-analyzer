@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/fs"
 	"log"
 	"os"
 	"path"
@@ -16,6 +17,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	addresses := createAddressMap(files)
+	keys := getSortedKeys(addresses)
+	for _, k := range keys {
+		fmt.Println(k, addresses[k])
+	}
+}
+
+func createAddressMap(files []fs.DirEntry) map[string]int {
 	var addresses = make(map[string]int)
 	var rgx = regexp.MustCompile(`\((.*?)\)`)
 	for _, file := range files {
@@ -38,7 +47,10 @@ func main() {
 
 		addresses[address] = addresses[address] + 1
 	}
+	return addresses
+}
 
+func getSortedKeys(addresses map[string]int) []string {
 	keys := make([]string, 0, len(addresses))
 	for k := range addresses {
 		keys = append(keys, k)
@@ -48,7 +60,5 @@ func main() {
 		return addresses[keys[i]] < addresses[keys[j]]
 	})
 
-	for _, k := range keys {
-		fmt.Println(k, addresses[k])
-	}
+	return keys
 }
